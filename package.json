@@ -1,0 +1,49 @@
+{
+  "name": "codex-model-checker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local model routing evidence inspector for Codex and ChatGPT",
+  "author": "FrankWangTHU",
+  "license": "MIT",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npm run build && electron .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:ui": "npm run build && tsx tests/ui-smoke.ts",
+    "test:browser": "npm run build && tsx tests/browser-smoke.ts",
+    "package": "npm run build && electron-builder --win nsis --x64 --publish never && node scripts/package.mjs",
+    "package:extension": "node scripts/package.mjs --extension-only"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "smol-toml": "^1.4.2",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/chrome": "^0.1.24",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/ws": "^8.18.1",
+    "archiver": "^7.0.1",
+    "electron": "45.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.frankwangthu.codex-model-checker",
+    "productName": "Codex Model Checker",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "package.json"],
+    "asar": true,
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "signExecutable": false, "icon": "dist/icon.ico" },
+    "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "deleteAppDataOnUninstall": false, "include": "scripts/installer.nsh" },
+    "publish": { "provider": "github", "owner": "FrankWangTHU", "repo": "codex-model-checker" }
+  }
+}
