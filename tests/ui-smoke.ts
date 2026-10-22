@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 async function main(){
 const directory=mkdtempSync(join(tmpdir(),'cmc-ui-'));mkdirSync('test-results',{recursive:true});
-const env:Record<string,string>={...Object.fromEntries(Object.entries(process.env).filter((item):item is [string,string]=>typeof item[1]==='string')),CMC_DATA_DIR:join(directory,'data'),CODEX_HOME:join(directory,'codex')};delete env.ELECTRON_RUN_AS_NODE;
+const env:Record<string,string>={...Object.fromEntries(Object.entries(process.env).filter((item):item is [string,string]=>typeof item[1]==='string')),CMC_LOG_ROOT:join(directory,'logs'),CMC_DATA_DIR:join(directory,'data'),CODEX_HOME:join(directory,'codex')};delete env.ELECTRON_RUN_AS_NODE;
 const app=await electron.launch({args:[resolve('.')],env});
 try{
   const page=await app.firstWindow();await expect(page.getByText('Model Checker',{exact:true})).toBeVisible();await expect(page.getByText('Codex',{exact:true})).toBeVisible();
@@ -12,7 +12,7 @@ try{
   await page.getByRole('button',{name:'设置',exact:true}).click();await expect(page.getByText('ChatGPT 浏览器扩展',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'生成配对码'}).click();await expect(page.locator('.pair-code')).toContainText(/\d{8}/);
   await page.screenshot({path:'test-results/settings.png'});
-  await expect(page.getByText('Codex 只读检测',{exact:true})).toBeVisible();
+  await expect(page.getByText('Codex 只读检测',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'开启临时诊断',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'恢复普通启动',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'启用代理',exact:true})).toHaveCount(0);
   const rejected=await page.evaluate(()=>window.checker.command('proxy-on'));
   if(!('ok' in rejected)||rejected.ok)throw new Error('Unsafe legacy proxy enabled');

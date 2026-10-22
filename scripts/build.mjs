@@ -1,5 +1,5 @@
 import {build} from 'esbuild';
-import {mkdir,copyFile,writeFile} from 'node:fs/promises';
+import {mkdir,copyFile,writeFile,readFile} from 'node:fs/promises';
 import {deflateSync} from 'node:zlib';
 await mkdir('dist/ui',{recursive:true});await mkdir('dist/extension',{recursive:true});
 await Promise.all([
@@ -19,3 +19,5 @@ const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',he
 await writeFile('dist/icon.png',png);
 const ico=Buffer.alloc(22);ico.writeUInt16LE(1,2);ico.writeUInt16LE(1,4);ico.writeUInt16LE(1,10);ico.writeUInt16LE(32,12);ico.writeUInt32LE(png.length,14);ico.writeUInt32LE(22,18);await writeFile('dist/icon.ico',Buffer.concat([ico,png]));
 console.log('Built desktop app and browser extension.');
+await mkdir('dist/diagnostics',{recursive:true});
+for(const name of ['schedule-desktop-diagnostic.ps1','restart-desktop-diagnostic.ps1','start-desktop-diagnostic.ps1'])await writeFile(`dist/diagnostics/${name}`,'\uFEFF'+(await readFile(`scripts/${name}`,'utf8')).replace(/^\uFEFF/,''));

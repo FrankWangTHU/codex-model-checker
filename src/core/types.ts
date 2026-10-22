@@ -8,17 +8,18 @@ export interface Observation {
   requestId: string;
   time: number;
   requested: string | null;
-  requestEvidence: 'wire' | 'session' | 'diagnostic' | 'probe' | 'missing';
+  requestEvidence: 'wire' | 'session' | 'diagnostic' | 'probe' | 'desktop' | 'missing';
   candidates: Candidate[];
-  transport: 'fetch' | 'websocket' | 'history' | 'proxy' | 'log' | 'diagnostic' | 'probe';
+  transport: 'fetch' | 'websocket' | 'history' | 'proxy' | 'log' | 'diagnostic' | 'probe' | 'desktop';
   state: 'pending' | 'complete' | 'error' | 'cancelled';
   special: boolean;
+  desktop?: {responseId:string;messageIds:string[];threadId:string|null;turnId:string|null;association:'exact'|'conflict'};
 }
 export interface RecordEntry extends Observation { verdict: Verdict; astraAlert: boolean }
 export interface Settings { alwaysOnTop: boolean; login: boolean; collapsed: boolean; notifications: boolean; bounds?: { x: number; y: number; width: number; height: number } }
 export interface Snapshot {
   records: RecordEntry[];
-  status: { codex: string; chatgpt: string; proxy: string; probe?: string; diagnostic?: string };
+  status: { codex: string; chatgpt: string; proxy: string; probe?: string; diagnostic?: string; desktop?:string };
   settings: Settings;
   pairing: { code: string; expiresAt: number };
   proxyEnabled: boolean;

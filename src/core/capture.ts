@@ -95,8 +95,9 @@ export function sanitizeObservation(value: unknown, source: Observation['source'
     id: String(value.id), source, connection: String(value.connection), requestId: String(value.requestId),
     time: typeof value.time === 'number' && Number.isFinite(value.time) && value.time >= 0 && value.time <= Date.now() + 60000 ? value.time : Date.now(),
     requested: model(value.requested) ? value.requested : null,
-    requestEvidence: (source==='codex'?['wire','session','diagnostic','probe']:['wire','session']).includes(String(value.requestEvidence)) ? value.requestEvidence as Observation['requestEvidence'] : 'missing',
-    candidates, transport: (source==='codex'?['fetch','websocket','history','proxy','log','diagnostic','probe']:['fetch','websocket','history']).includes(String(value.transport)) ? value.transport as Observation['transport'] : 'fetch',
+    requestEvidence: (source==='codex'?['wire','session','diagnostic','probe','desktop']:['wire','session']).includes(String(value.requestEvidence)) ? value.requestEvidence as Observation['requestEvidence'] : 'missing',
+    candidates, transport: (source==='codex'?['fetch','websocket','history','proxy','log','diagnostic','probe','desktop']:['fetch','websocket','history']).includes(String(value.transport)) ? value.transport as Observation['transport'] : 'fetch',
+    ...(source==='codex'&&object(value.desktop)&&safeId(value.desktop.responseId)&&Array.isArray(value.desktop.messageIds)&&['exact','conflict'].includes(String(value.desktop.association))?{desktop:{responseId:String(value.desktop.responseId),messageIds:value.desktop.messageIds.filter(safeId).slice(0,100) as string[],threadId:safeId(value.desktop.threadId)?String(value.desktop.threadId):null,turnId:safeId(value.desktop.turnId)?String(value.desktop.turnId):null,association:value.desktop.association as 'exact'|'conflict'}}:{}),
     state: ['pending', 'complete', 'error', 'cancelled'].includes(String(value.state)) ? value.state as Observation['state'] : 'error', special: value.special === true
   };
 }
