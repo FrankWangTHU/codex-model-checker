@@ -20,7 +20,8 @@ export class Bridge {
   private equal(a: string, b: string): boolean { const x=Buffer.from(a), y=Buffer.from(b); return x.length === y.length && timingSafeEqual(x,y); }
   private async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     const origin = req.headers.origin ?? '';
-    if (req.headers.host !== `127.0.0.1:${BRIDGE_PORT}` || !/^chrome-extension:\/\/[a-p]{32}$/.test(origin)) { res.writeHead(403).end(); return; }
+    const address=this.server.address();const port=address&&typeof address==='object'?address.port:BRIDGE_PORT;
+    if (req.headers.host !== `127.0.0.1:${port}` || !/^chrome-extension:\/\/[a-p]{32}$/.test(origin)) { res.writeHead(403).end(); return; }
     res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary','Origin'); res.setHeader('Cache-Control','no-store');
     if (req.method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Methods': 'POST', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' }).end(); return; }
     if (req.method !== 'POST' || !['/pair','/events','/presence'].includes(req.url ?? '')) { res.writeHead(404).end(); return; }

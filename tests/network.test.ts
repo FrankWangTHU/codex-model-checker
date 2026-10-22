@@ -60,9 +60,9 @@ test('WebSocket proxy forwards original messages and associates interleaved resp
   }finally{client.terminate();await proxy.stop();for(const c of wss.clients)c.terminate();wss.close();await stop(upstream);}
 });
 test('bridge pairing is single-use, token/origin scoped, and strips non-metadata',async()=>{
-  const observations:Observation[]=[];const dir=mkdtempSync(join(tmpdir(),'cmc-bridge-'));const bridge=new Bridge(dir,o=>observations.push(o),()=>{},()=>{});await bridge.start();bridge.renew();
+  const observations:Observation[]=[];const dir=mkdtempSync(join(tmpdir(),'cmc-bridge-'));const bridge=new Bridge(dir,o=>observations.push(o),()=>{},()=>{});await bridge.start(0);bridge.renew();const bridgePort=(bridge.server.address() as import('node:net').AddressInfo).port;
   const origin='chrome-extension://'+'a'.repeat(32);
-  const post=(path:string,data:unknown,token?:string,originValue=origin)=>fetch(`http://127.0.0.1:${BRIDGE_PORT}${path}`,{method:'POST',headers:{Origin:originValue,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify(data)});
+  const post=(path:string,data:unknown,token?:string,originValue=origin)=>fetch(`http://127.0.0.1:${bridgePort}${path}`,{method:'POST',headers:{Origin:originValue,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify(data)});
   try{
     assert.equal((await post('/pair',{code:bridge.pairing.code},undefined,'https://evil.test')).status,403);
     const code=bridge.pairing.code,paired=await post('/pair',{code});assert.equal(paired.status,200);const {token}=await paired.json()as {token:string};

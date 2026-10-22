@@ -1,5 +1,5 @@
 import {chromium,expect} from '@playwright/test';
-import {mkdtempSync,mkdirSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,cpSync,readFileSync,writeFileSync,readdirSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {Bridge} from '../src/main/bridge';
@@ -7,8 +7,8 @@ import {assess} from '../src/core/assessment';
 import type {Observation} from '../src/core/types';
 async function main(){
   const dir=mkdtempSync(join(tmpdir(),'cmc-browser-')),observations:Observation[]=[];
-  const bridge=new Bridge(dir,o=>observations.push(structuredClone(o)),()=>{},()=>{});await bridge.start();bridge.renew();
-  const extension=resolve('dist/extension');
+  const bridge=new Bridge(dir,o=>observations.push(structuredClone(o)),()=>{},()=>{});await bridge.start(0);bridge.renew();const port=(bridge.server.address() as import('node:net').AddressInfo).port;
+  const extension=join(dir,'extension');cpSync(resolve('dist/extension'),extension,{recursive:true});for(const name of readdirSync(extension)){if(/\.(js|json)$/.test(name)){const file=join(extension,name);writeFileSync(file,readFileSync(file,'utf8').replaceAll('43821',String(port)));}}
   let context:Awaited<ReturnType<typeof chromium.launchPersistentContext>>;
   try{context=await chromium.launchPersistentContext(join(dir,'profile'),{
     ...(process.env.CMC_BROWSER_PATH?{executablePath:process.env.CMC_BROWSER_PATH}:{channel:process.env.CMC_BROWSER_CHANNEL??'chromium'}),

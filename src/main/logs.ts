@@ -36,12 +36,20 @@ export class SessionWatcher {
           }catch{/* Files may rotate while scanning. */}finally{await handle?.close();}
         }
       }
-      this.health(readable?'日志监听中 · 响应路由需代理采集':'等待本机会话日志');
+      this.health(readable?'只读日志监听中 · 会话记录不含服务器响应模型':'等待本机会话日志');
       if(this.cursors.size>2048)this.cursors.clear();
     }finally{this.busy=false;}
   }
   private line(path:string,line:string):void{
-    try{const value=JSON.parse(line);if(value.type!=='turn_context'||!value.payload)return;const requested=requestModel(value.payload);if(!requested)return;
+    try{const value=JSON.parse(line);
+      if(value.type==='event_msg'&&value.payload?.type==='model_reroute'){
+        const from=value.payload.from_model,to=value.payload.to_model;
+        if(typeof from!=='string'||typeof to!=='string'||!/^[\w .:/-]{1,160}$/.test(from)||!/^[\w .:/-]{1,160}$/.test(to))return;
+        const time=Date.parse(value.timestamp);if(!Number.isFinite(time))return;
+        const id=createHash('sha256').update(path+'|'+value.timestamp+'|reroute').digest('hex');
+        this.receive({id,source:'codex',connection:createHash('sha256').update(path).digest('hex').slice(0,24),requestId:id,time,requested:from,requestEvidence:'diagnostic',candidates:[{field:'model_reroute.to_model',model:to,kind:'route'}],transport:'diagnostic',state:'complete',special:from==='codex-auto-review'});return;
+      }
+      if(value.type!=='turn_context'||!value.payload)return;const requested=requestModel(value.payload);if(!requested)return;
       const turn=String(value.payload.turn_id??value.timestamp??'');const id=createHash('sha256').update(path+'|'+turn).digest('hex');
       const timestamp=Date.parse(value.timestamp);this.receive({id,source:'codex',connection:createHash('sha256').update(path).digest('hex').slice(0,24),requestId:id,time:Number.isFinite(timestamp)?timestamp:Date.now(),requested,requestEvidence:'session',candidates:[],transport:'log',state:'complete',special:false});
     }catch{}

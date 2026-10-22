@@ -9,7 +9,7 @@ export function assess(observation: Observation): RecordEntry {
   const labels = [...new Set(observation.candidates.filter(c => c.kind === 'label').map(c => normalize(c.model)))];
   let verdict: RecordEntry['verdict'] = 'unknown';
   if (routes.length > 1 || labels.length > 1 || (routes.length === 1 && labels.some(m => m !== routes[0]))) verdict = 'conflict';
-  else if (!observation.special && routes.length === 1 && requested && observation.requestEvidence === 'wire') {
+  else if (!observation.special && observation.state !== 'error' && observation.state !== 'cancelled' && routes.length === 1 && requested && ['wire','diagnostic','probe'].includes(observation.requestEvidence)) {
     verdict = requested === 'auto' ? 'auto' : requested === routes[0] ? 'match' : 'mismatch';
   }
   return { ...observation, verdict, astraAlert: requested === 'gpt-6-astra' && verdict === 'mismatch' };

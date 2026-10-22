@@ -1,6 +1,6 @@
 {
   "name": "codex-model-checker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Local model routing evidence inspector for Codex and ChatGPT",
   "author": "FrankWangTHU",
@@ -39,11 +39,37 @@
   "build": {
     "appId": "com.frankwangthu.codex-model-checker",
     "productName": "Codex Model Checker",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "package.json"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
     "asar": true,
-    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "signExecutable": false, "icon": "dist/icon.ico" },
-    "nsis": { "oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "deleteAppDataOnUninstall": false, "include": "scripts/installer.nsh" },
-    "publish": { "provider": "github", "owner": "FrankWangTHU", "repo": "codex-model-checker" }
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signExecutable": false,
+      "icon": "dist/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "include": "scripts/installer.nsh"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "FrankWangTHU",
+      "repo": "codex-model-checker"
+    }
   }
 }

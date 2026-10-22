@@ -12,14 +12,15 @@ try{
   await page.getByRole('button',{name:'设置',exact:true}).click();await expect(page.getByText('ChatGPT 浏览器扩展',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'生成配对码'}).click();await expect(page.locator('.pair-code')).toContainText(/\d{8}/);
   await page.screenshot({path:'test-results/settings.png'});
-  await page.getByRole('button',{name:'启用代理',exact:true}).click();await expect(page.getByRole('button',{name:'恢复配置',exact:true})).toBeVisible();
-  if(!readFileSync(join(directory,'codex','config.toml'),'utf8').includes('127.0.0.1:43822'))throw new Error('Proxy configuration was not installed');
-  await page.getByRole('button',{name:'恢复配置',exact:true}).click();await expect(page.getByRole('button',{name:'启用代理',exact:true})).toBeVisible();
-  if(existsSync(join(directory,'codex','config.toml')))throw new Error('Previously absent configuration was not restored');
+  await expect(page.getByText('Codex 只读检测',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'启用代理',exact:true})).toHaveCount(0);
+  const rejected=await page.evaluate(()=>window.checker.command('proxy-on'));
+  if(!('ok' in rejected)||rejected.ok)throw new Error('Unsafe legacy proxy enabled');
+  if(existsSync(join(directory,'codex','config.toml')))throw new Error('Read-only mode modified Codex configuration');
   await page.getByRole('button',{name:'检测记录',exact:true}).click();await expect(page.getByText('等待第一条模型证据')).toBeVisible();
   await page.screenshot({path:'test-results/history.png'});
   await page.getByTitle('收起详情').click();await page.getByTitle('折叠窗口').click();await expect(page.getByText('正在观察模型证据')).toBeVisible();await page.getByText('正在观察模型证据').click();
-  console.log('Electron mini window, settings, pairing, proxy enable/restore, collapse and empty history passed.');
+  console.log('Electron mini window, settings, pairing, read-only mode and legacy proxy rejection, collapse and empty history passed.');
 }finally{await app.close();}
 }
 void main().catch(error=>{console.error(error);process.exitCode=1;});

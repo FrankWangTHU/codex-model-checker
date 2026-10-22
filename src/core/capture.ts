@@ -86,7 +86,7 @@ export function sanitizeObservation(value: unknown, source: Observation['source'
   const safeId = (v: unknown) => typeof v === 'string' && /^[a-zA-Z0-9_.:-]{1,200}$/.test(v);
   if (!safeId(value.id) || !safeId(value.connection) || !safeId(value.requestId) || !Array.isArray(value.candidates)) return null;
   const candidates: Candidate[] = [];
-  const allowedFields = ['response.model', 'model', 'metadata.resolved_model_slug', 'server_ste_metadata.model_slug', 'server_ste_metadata.resolved_model_slug', 'assistant.metadata.model_slug'];
+  const allowedFields = ['response.model', 'model', 'diagnostic.server_model', 'model_reroute.to_model', 'metadata.resolved_model_slug', 'server_ste_metadata.model_slug', 'server_ste_metadata.resolved_model_slug', 'assistant.metadata.model_slug'];
   for (const item of value.candidates.slice(0, 24)) {
     if (!object(item) || !allowedFields.includes(String(item.field)) || !model(item.model)) continue;
     candidates.push({ field: String(item.field), model: item.model, kind: item.field === 'assistant.metadata.model_slug' ? 'label' : 'route' });
@@ -95,8 +95,8 @@ export function sanitizeObservation(value: unknown, source: Observation['source'
     id: String(value.id), source, connection: String(value.connection), requestId: String(value.requestId),
     time: typeof value.time === 'number' && Number.isFinite(value.time) && value.time >= 0 && value.time <= Date.now() + 60000 ? value.time : Date.now(),
     requested: model(value.requested) ? value.requested : null,
-    requestEvidence: ['wire', 'session'].includes(String(value.requestEvidence)) ? value.requestEvidence as 'wire' | 'session' : 'missing',
-    candidates, transport: ['fetch', 'websocket', 'history', 'proxy', 'log'].includes(String(value.transport)) ? value.transport as Observation['transport'] : 'fetch',
+    requestEvidence: (source==='codex'?['wire','session','diagnostic','probe']:['wire','session']).includes(String(value.requestEvidence)) ? value.requestEvidence as Observation['requestEvidence'] : 'missing',
+    candidates, transport: (source==='codex'?['fetch','websocket','history','proxy','log','diagnostic','probe']:['fetch','websocket','history']).includes(String(value.transport)) ? value.transport as Observation['transport'] : 'fetch',
     state: ['pending', 'complete', 'error', 'cancelled'].includes(String(value.state)) ? value.state as Observation['state'] : 'error', special: value.special === true
   };
 }
